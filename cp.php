@@ -206,13 +206,6 @@ switch($_SERVER['REQUEST_METHOD']){
         print $data;
 
 
-
-        #TODO used to json
-
-
-
-
-
         break;
 
     case DELETE:
@@ -230,10 +223,9 @@ switch($_SERVER['REQUEST_METHOD']){
         $a_roll = &$config['voucher']['roll'];
         #END load_cfg
 
-        $id = get_rol_index_by_number($a_roll, $number);
-
-
-        if (!$id) {
+        try{
+            $id = get_rol_index_by_number($a_roll, $number);
+        }catch(RollNotFoundException $ex){
             header("Not found", false, 404);
             return;
         }
@@ -281,12 +273,7 @@ switch($_SERVER['REQUEST_METHOD']){
         unlock($voucherlck);
         $a_roll[] = $rollent;
 
-        #TODO devolver ID recien creado para que la otra app tenga la relacion de IDs
-
-
         write_config();
-
-
 
         header("Location: ".BASE_URL."/roll/".$_POST["number"], false, 303);
         print BASE_URL."/roll/".$_POST["number"];
