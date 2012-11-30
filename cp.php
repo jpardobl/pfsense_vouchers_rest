@@ -25,7 +25,6 @@
     POSSIBILITY OF SUCH DAMAGE.
 
 */
-
 require 'globals.inc';
 require("captiveportal.inc");
 require_once("voucher.inc");
@@ -43,8 +42,12 @@ class CantWritePrivateKeyException extends Exception{}
 
 
 function auth() {
-    #print_r($_SERVER);
-    if($_SERVER['HTTP_AUTH'] == SECRET_KEY) return true;
+    if(
+        $_SERVER['auth'] == SECRET_KEY ||
+        $_SERVER['Auth'] == SECRET_KEY ||
+        $_SERVER['AUTH'] == SECRET_KEY ||
+        $_SERVER['HTTP_AUTH'] == SECRET_KEY
+        ) return true;
 
     return false;
 }
@@ -143,6 +146,16 @@ function to_json($roll){
  */
 function valid_post(){
     global $a_roll, $config;
+    // Look for duplicate roll #
+    foreach($a_roll as $re) {
+            if($re['number'] == $_POST['number']) {
+
+                    header("Resource exists", fall, 409);
+                    print sprintf(gettext("Roll number %s already exists."), $_POST['number']);
+                    return false;
+            }
+    }
+
     $maxnumber = (1<<$config['voucher']['rollbits']) -1;    // Highest Roll#
     $maxcount = (1<<$config['voucher']['ticketbits']) -1;   // Highest Ticket#
 
@@ -153,16 +166,6 @@ function valid_post(){
     if(!isset($_POST['minutes']))
         $input_errors[] = "Roll minutes is missing";
 
-
-
-    // Look for duplicate roll #
-    foreach($a_roll as $re) {
-            if($re['number'] == $_POST['number']) {
-                   # print "malamente";
-                    $input_errors[] = sprintf(gettext("Roll number %s already exists."), $_POST['number']);
-                    break;
-            }
-    }
 
     if (!is_numeric($_POST['number']) || $_POST['number'] >= $maxnumber)
         $input_errors[] = sprintf(gettext("Roll number must be numeric and less than %s"), $maxnumber);
