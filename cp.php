@@ -31,7 +31,7 @@ require('globals.inc');
 require("captiveportal.inc");
 require_once("voucher.inc");
 define("BASE_URL", '/cp.php');
-//define("VOUCHER_BIN", '/usr/local/bin/voucher');
+define("VOUCHER_BIN", '/usr/local/bin/voucher');
 
 global $cpzone, $g;
 
@@ -94,7 +94,7 @@ function retrieve_vouchers($roll_number, $count){
     chmod("{$g['varetc_path']}/voucher.private", 0600);
     fwrite($fd, $privkey);
     fclose($fd);
-    $cmd = VOUCHER_BIN." -c {$g['varetc_path']}/voucher.cfg -p {$g['varetc_path']}/voucher.private $roll_number $count";
+    $cmd = VOUCHER_BIN." -c {$g['varetc_path']}/voucher_$cpzone.cfg -p {$g['varetc_path']}/voucher.private $roll_number $count";
     #print "cmd: $cmd";
     exec($cmd, $out);
     unlink("{$g['varetc_path']}/voucher.private");
@@ -221,7 +221,7 @@ switch($_SERVER['REQUEST_METHOD']){
     case GET:
 
         if(preg_match('/^\/roll\/(\w+)\/(\d+)\/?$/', $_SERVER['PATH_INFO'], $matches)){
-            $cpzone = $matches[1];
+            $cpzone = strtolower($matches[1]);
             $number = $matches[2];
             
         }else{
@@ -252,7 +252,7 @@ switch($_SERVER['REQUEST_METHOD']){
         $id = -1;
 
         if(preg_match('/^\/roll\/(\w+)\/(\d+)\/?$/', $_SERVER['PATH_INFO'], $matches)){
-            $cpzone = $matches[1];
+            $cpzone = strtolower($matches[1]);
             $number = $matches[2];            
         }else{
             header("Bad URI", false, 400);
@@ -285,7 +285,7 @@ switch($_SERVER['REQUEST_METHOD']){
   #      print "POST";
       //  print $_SERVER['PATH_INFO'];
         if(preg_match('/^\/roll\/(\w+)\/?$/', $_SERVER['PATH_INFO'], $matches)){
-            $cpzone = $matches[1];
+            $cpzone = strtolower($matches[1]);
         }else{
             header("Not found", false, 404);
             print "Not found";
